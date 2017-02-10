@@ -7,12 +7,35 @@ from flask import Flask, request, abort
 import json 
 import requests
 import logging, sys
+import sqlite3
 
 bot_email = "ucrss@sparkbot.io"
 bot_name = "UC RSS Feed"
 bearer = "N2NlY2MyODUtMzJmMi00YTY2LWFhNmUtNTU3ZGFjNGRmM2Y3YjE2MWRjNGQtZTc5"
 file1  = "http://i.imgur.com/8zesPd1.gifv" 
+try:
+	db = sqlite3.connect('ucrss.db')
+	cursor = db.cursor()
+	cursor.execute('''
+		CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY, name TEXT, personId TEXT, personEmail TEXT, feed TEXT, active BOOLEAN, dateCreated INTEGER, dateModified INTEGER)
+	''')
+	db.commit()
+except Exception as error:
+	db.rollback()
+	raise error
+finally:
+	db.close()
 
+def insert():
+	cursor = db.cursor()
+	try:
+		cursor.execute('''INSERT INTO users(name, personId, personEmail, feed, active, dateCreated, dateModified''')
+	except Exception as error:
+		db.rollback()
+		raise error
+	finally:
+		db.close()
+	
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 app = Flask(__name__)
 
@@ -59,4 +82,6 @@ def index():
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0' , port=8080, debug=True)
+
+db.close()
 
